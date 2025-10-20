@@ -222,7 +222,7 @@
       <div class="form-section">
         <h3>📡 Configuración APRS</h3>
         <label>Callsign: <input type="text" id="callsign" required></label>
-        <label>Digi Mode: <input type="text" id="digiMode"></label>
+        <label>Digi Mode: <input type="number" id="digiMode" min="0" max="2" step="1"></label>
         <label>Symbol: <input type="text" id="symbol"></label>
         <label>Overlay: <input type="text" id="overlay"></label>
         <label>Comment: <input type="text" id="comment"></label>
@@ -239,7 +239,7 @@
       <div class="form-section">
         <h3>📊 Telemetría</h3>
         <label><input type="checkbox" id="sendBatteryTelemetry"> Send Battery Telemetry</label>
-        <label>Beacon Interval (s): <input type="number" id="beaconInterval" min="10"></label>
+        <label>Beacon Interval (s): <input type="number" id="beaconInterval" min="15" step="5"></label>
         <label><input type="checkbox" id="digiUltraEcoMode"> Digi Ultra Eco Mode</label>
         <label><input type="checkbox" id="wxSensorActive"> Wx Sensor Active</label>
       </div>
@@ -250,8 +250,8 @@
         <label>Frequency (Hz): <input type="number" id="frequency" min="430000000" max="928000000"></label>
         <label>Spreading Factor: <input type="number" id="spreadingfactor" min="7" max="12"></label>
         <label>Coding Rate (4/X): <input type="number" id="codingrate4" min="5" max="8"></label>
-        <label>Signal Bandwidth (Hz): <input type="number" id="signalbandwidth" min="7800" max="500000"></label>
-        <label>Power (dBm): <input type="number" id="power" min="2" max="20"></label>
+        <label>Signal Bandwidth (Hz): <input type="number" id="signalbandwidth" min="62.5" max="500.0" step="0.1"></label>
+        <label>Power (dBm): <input type="number" id="power" min="2" max="22"></label>
       </div>
       
       <div class="button-group">
@@ -354,27 +354,27 @@
       const power = parseInt(document.getElementById('power').value);
       
       if (freq && (freq < 430000000 || freq > 928000000)) {
-        showMessage('Frecuencia fuera de rango (430-928 MHz)', 'error');
+        showMessage('Frecuencia out of range (430-928 MHz)', 'error');
         return false;
       }
       
       if (sf && (sf < 7 || sf > 12)) {
-        showMessage('Spreading Factor debe ser 7-12', 'error');
+        showMessage('Spreading Factor must be 7-12', 'error');
         return false;
       }
       
       if (cr && (cr < 5 || cr > 8)) {
-        showMessage('Coding Rate debe ser 5-8', 'error');
+        showMessage('Coding Rate must be 5-8', 'error');
         return false;
       }
       
-      if (bw && (bw < 7800 || bw > 500000)) {
-        showMessage('Bandwidth fuera de rango (7800-500000 Hz)', 'error');
+      if (bw && (bw < 62.5 || bw > 500.0)) {
+        showMessage('Bandwidth out of range (62.5KHz-500KHz)', 'error');
         return false;
       }
       
-      if (power && (power < 2 || power > 20)) {
-        showMessage('Power debe ser 2-20 dBm', 'error');
+      if (power && (power < 2 || power > 22)) {
+        showMessage('Power must be 2-22 dBm', 'error');
         return false;
       }
       
