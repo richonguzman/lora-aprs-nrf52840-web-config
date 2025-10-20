@@ -389,21 +389,21 @@
       
       const data = {
         callsign: document.getElementById('callsign').value,
-        digiMode: document.getElementById('digiMode').value,
+        digiMode: parseInt(document.getElementById("digiMode").value) || 0,
         symbol: document.getElementById('symbol').value,
         overlay: document.getElementById('overlay').value,
         comment: document.getElementById('comment').value,
-        latitude: parseFloat(document.getElementById('latitude').value) || null,
-        longitude: parseFloat(document.getElementById('longitude').value) || null,
+        latitude: parseFloat(document.getElementById('latitude').value) || 0.0,
+        longitude: parseFloat(document.getElementById('longitude').value) || 0.0,
         sendBatteryTelemetry: document.getElementById('sendBatteryTelemetry').checked,
-        beaconInterval: parseInt(document.getElementById('beaconInterval').value) || 60,
+        beaconInterval: parseInt(document.getElementById('beaconInterval').value) || 15,
         digiUltraEcoMode: document.getElementById('digiUltraEcoMode').checked,
         wxSensorActive: document.getElementById('wxSensorActive').checked,
-        frequency: parseFloat(document.getElementById('frequency').value),
-        spreadingfactor: parseInt(document.getElementById('spreadingfactor').value),
-        codingrate4: parseInt(document.getElementById('codingrate4').value),
-        signalbandwidth: parseFloat(document.getElementById('signalbandwidth').value),
-        power: parseInt(document.getElementById('power').value)        
+        frequency: parseFloat(document.getElementById('frequency').value) || 433775000,
+        spreadingfactor: parseInt(document.getElementById('spreadingfactor').value) || 12,
+        codingrate4: parseInt(document.getElementById('codingrate4').value) || 5,
+        signalbandwidth: parseFloat(document.getElementById('signalbandwidth').value) || 125.0,
+        power: parseInt(document.getElementById('power').value) || 20      
       };
       
       await sendJSON(data);
