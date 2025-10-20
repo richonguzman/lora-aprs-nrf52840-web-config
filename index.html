@@ -1,11 +1,77 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Mi página</title>
-  </head>
-  <body>
-    <h1>Hola mundo desde GitHub Pages</h1>
-  </body>
-</html>
+<head>
+  <meta charset="utf-8">
+  <title>LoRa APRS NRF52840 Web Config</title>
+</head>
+<body>
+  <h1>LoRa APRS NRF52840 Digi Web Configurator</h1>
+  <form id="LoRaAPRSDigiForm">
+    <label>Callsign  : <input type="text" id="callsign"></label><br>
+    <label>Digi Mode : <input type="text" id="digiMode"></label><br>
+    <label>Symbol    : <input type="text" id="symbol"></label><br>
+    <label>Overlay   : <input type="text" id="overlay"></label><br>
+    <label>Comment   : <input type="text" id="comment"></label><br>
+    <label>Latitude: <input type="number" step="any" id="latitude"></label><br>
+    <label>Longitude: <input type="number" step="any" id="longitude"></label><br>
+    <label>Send Battery Telemetry: <input type="checkbox" id="sendBatteryTelemetry"></label><br>
+    <label>Beacon Interval (s): <input type="number" id="beaconInterval"></label><br>
+    <label>Digi Ultra Eco Mode: <input type="checkbox" id="digiUltraEcoMode"></label><br>
+    <label>Wx Sensor Active: <input type="checkbox" id="wxSensorActive"></label><br><br>
+    
+    <label>LoRa Frequency (Hz)  : <input type="number" id="frequency"></label><br>
+    <label>Spreading Factor     : <input type="number" id="spreadingfactor"></label><br>
+    <label>Coding Rate (4/X)    : <input type="number" id="codingrate4"></label><br>
+    <label>Signal Bandwidth (Hz): <input type="number" id="signalbandwidth"></label><br>
+    <label>Power (dBm)          : <input type="number" id="power"></label><br>
+     
+    
+    <button type="submit">Send Configuration to NRF52840</button>
+  </form>
 
+  <script>
+    let port;
+
+    document.getElementById("LoRaAPRSDigiForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // Get Data and generate JSON
+      const data = {
+        callsign: document.getElementById("callsign").value,
+        digiMode: document.getElementById("digiMode").value,
+        symbol: document.getElementById("symbol").value,
+        overlay: document.getElementById("overlay").value,
+        comment: document.getElementById("comment").value,
+        latitude: parseFloat(document.getElementById("latitude").value),
+        longitude: parseFloat(document.getElementById("longitude").value),
+        sendBatteryTelemetry: document.getElementById("sendBatteryTelemetry").checked,
+        beaconInterval: parseInt(document.getElementById("beaconInterval").value),
+        digiUltraEcoMode: document.getElementById("digiUltraEcoMod").checked,
+        wxSensorActive: document.getElementById("wxSensorActive").checked,
+        frequency: parseFloat(document.getElementById("frequency").value),
+        spreadingfactor: parseInt(document.getElementById("spreadingfactor").value),
+        codingrate4: parseInt(document.getElementById("codingrate4").value),
+        signalbandwidth: parseFloat(document.getElementById("signalbandwidth").value),
+        power: parseInt(document.getElementById("power").value)        
+      };
+      const jsonData = JSON.stringify(data);
+      
+      try {
+        if (!port) {
+          port = await navigator.serial.requestPort();
+          await port.open({ baudRate: 115200 });
+        }
+
+        const writer = port.writable.getWriter();
+        const encoder = new TextEncoder();
+        await writer.write(encoder.encode(jsonData + "\n"));
+        writer.releaseLock();
+
+        alert("New Configuration sent:\n" + jsonData);
+      } catch (error) {
+        alert("Error: " + error);
+      }
+    });
+  </script>
+</body>
+</html>
