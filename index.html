@@ -6,6 +6,10 @@
 </head>
 <body>
   <h1>LoRa APRS NRF52840 Digi Web Configurator</h1>
+  
+  <button id="connect">🔌 Connect to NRF52840</button>
+  <p id="status" style="color: gray;">Not connected</p>
+  
   <form id="LoRaAPRSDigiForm">
     <label>Callsign  : <input type="text" id="callsign"></label><br>
     <label>Digi Mode : <input type="text" id="digiMode"></label><br>
@@ -23,7 +27,7 @@
     <label>Spreading Factor     : <input type="number" id="spreadingfactor"></label><br>
     <label>Coding Rate (4/X)    : <input type="number" id="codingrate4"></label><br>
     <label>Signal Bandwidth (Hz): <input type="number" id="signalbandwidth"></label><br>
-    <label>Power (dBm)          : <input type="number" id="power"></label><br>
+    <label>Power (dBm)          : <input type="number" id="power"></label><br><br><br>
      
     
     <button type="submit">Send Configuration to NRF52840</button>
@@ -31,9 +35,29 @@
 
   <script>
     let port;
+    let writer;
+    
+    // --- Botón "Connect" ---
+    document.getElementById("connect").addEventListener("click", async () => {
+      try {
+        port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 115200 });
+        writer = port.writable.getWriter();
+        document.getElementById("status").textContent = "✅ Connected to NRF52840";
+        document.getElementById("status").style.color = "green";
+      } catch (error) {
+        alert("Connection failed: " + error);
+      }
+    });
 
     document.getElementById("LoRaAPRSDigiForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      
+      
+      if (!port || !writer) {
+        alert("Please connect to the NRF52840 first.");
+        return;
+      }
 
       // Get Data and generate JSON
       const data = {
@@ -46,7 +70,7 @@
         longitude: parseFloat(document.getElementById("longitude").value),
         sendBatteryTelemetry: document.getElementById("sendBatteryTelemetry").checked,
         beaconInterval: parseInt(document.getElementById("beaconInterval").value),
-        digiUltraEcoMode: document.getElementById("digiUltraEcoMod").checked,
+        digiUltraEcoMode: document.getElementById("digiUltraEcoMode").checked,
         wxSensorActive: document.getElementById("wxSensorActive").checked,
         frequency: parseFloat(document.getElementById("frequency").value),
         spreadingfactor: parseInt(document.getElementById("spreadingfactor").value),
@@ -54,19 +78,12 @@
         signalbandwidth: parseFloat(document.getElementById("signalbandwidth").value),
         power: parseInt(document.getElementById("power").value)        
       };
+      
       const jsonData = JSON.stringify(data);
       
       try {
-        if (!port) {
-          port = await navigator.serial.requestPort();
-          await port.open({ baudRate: 115200 });
-        }
-
-        const writer = port.writable.getWriter();
-        const encoder = new TextEncoder();
+        const encoder = new TextEncoder();        
         await writer.write(encoder.encode(jsonData + "\n"));
-        writer.releaseLock();
-
         alert("New Configuration sent:\n" + jsonData);
       } catch (error) {
         alert("Error: " + error);
