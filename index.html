@@ -2,93 +2,422 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LoRa APRS NRF52840 Web Config</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      padding: 30px;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+    
+    .status-section {
+      margin-bottom: 25px;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 8px;
+    }
+    
+    #status {
+      font-size: 14px;
+      font-weight: bold;
+      padding: 8px 0;
+    }
+    
+    .status-disconnected {
+      color: #dc3545;
+    }
+    
+    .status-connected {
+      color: #28a745;
+    }
+    
+    #connectBtn {
+      padding: 12px 20px;
+      font-size: 16px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    
+    #connectBtn:hover:not(:disabled) {
+      background: #5568d3;
+    }
+    
+    #connectBtn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    form {
+      display: none;
+    }
+    
+    form.active {
+      display: block;
+    }
+    
+    .form-section {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .form-section:last-child {
+      border-bottom: none;
+    }
+    
+    .form-section h3 {
+      font-size: 14px;
+      color: #667eea;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+    
+    label input[type="text"],
+    label input[type="number"] {
+      flex: 1;
+      margin-left: 10px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    label input[type="checkbox"] {
+      margin-left: 10px;
+      cursor: pointer;
+    }
+    
+    label input[type="text"]:focus,
+    label input[type="number"]:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+    }
+    
+    button[type="submit"],
+    #sendDeleteCommandButton {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    
+    button[type="submit"] {
+      background: #28a745;
+      color: white;
+    }
+    
+    button[type="submit"]:hover:not(:disabled) {
+      background: #218838;
+    }
+    
+    #sendDeleteCommandButton {
+      background: #dc3545;
+      color: white;
+    }
+    
+    #sendDeleteCommandButton:hover:not(:disabled) {
+      background: #c82333;
+    }
+    
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .message {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .message.show {
+      display: block;
+    }
+    
+    .message.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .message.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .message.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+  </style>
 </head>
 <body>
-  <h1>LoRa APRS NRF52840 Digi Web Configurator</h1>
-  
-  <button id="connect">🔌 Connect to NRF52840</button>
-  <p id="status" style="color: gray;">Not connected</p>
-  
-  <form id="LoRaAPRSDigiForm">
-    <label>Callsign  : <input type="text" id="callsign"></label><br>
-    <label>Digi Mode : <input type="text" id="digiMode"></label><br>
-    <label>Symbol    : <input type="text" id="symbol"></label><br>
-    <label>Overlay   : <input type="text" id="overlay"></label><br>
-    <label>Comment   : <input type="text" id="comment"></label><br>
-    <label>Latitude: <input type="number" step="any" id="latitude"></label><br>
-    <label>Longitude: <input type="number" step="any" id="longitude"></label><br>
-    <label>Send Battery Telemetry: <input type="checkbox" id="sendBatteryTelemetry"></label><br>
-    <label>Beacon Interval (s): <input type="number" id="beaconInterval"></label><br>
-    <label>Digi Ultra Eco Mode: <input type="checkbox" id="digiUltraEcoMode"></label><br>
-    <label>Wx Sensor Active: <input type="checkbox" id="wxSensorActive"></label><br><br>
+  <div class="container">
+    <h1>🛰️ LoRa APRS NRF52840 Digi Web Config</h1>
     
-    <label>LoRa Frequency (Hz)  : <input type="number" id="frequency"></label><br>
-    <label>Spreading Factor     : <input type="number" id="spreadingfactor"></label><br>
-    <label>Coding Rate (4/X)    : <input type="number" id="codingrate4"></label><br>
-    <label>Signal Bandwidth (Hz): <input type="number" id="signalbandwidth"></label><br>
-    <label>Power (dBm)          : <input type="number" id="power"></label><br><br><br>
-     
+    <div class="status-section">
+      <button id="connectBtn">🔌 Conectar a NRF52840</button>
+      <p id="status" class="status-disconnected">❌ No conectado</p>
+    </div>
     
-    <button type="submit">Send Configuration to NRF52840</button>
-  </form>
+    <div id="message" class="message"></div>
+    
+    <form id="LoRaAPRSDigiForm">
+      <!-- APRS Settings -->
+      <div class="form-section">
+        <h3>📡 Configuración APRS</h3>
+        <label>Callsign: <input type="text" id="callsign" required></label>
+        <label>Digi Mode: <input type="text" id="digiMode"></label>
+        <label>Symbol: <input type="text" id="symbol"></label>
+        <label>Overlay: <input type="text" id="overlay"></label>
+        <label>Comment: <input type="text" id="comment"></label>
+      </div>
+      
+      <!-- Position -->
+      <div class="form-section">
+        <h3>📍 Posición</h3>
+        <label>Latitude: <input type="number" id="latitude" step="any"></label>
+        <label>Longitude: <input type="number" id="longitude" step="any"></label>
+      </div>
+      
+      <!-- Telemetry -->
+      <div class="form-section">
+        <h3>📊 Telemetría</h3>
+        <label><input type="checkbox" id="sendBatteryTelemetry"> Send Battery Telemetry</label>
+        <label>Beacon Interval (s): <input type="number" id="beaconInterval" min="10"></label>
+        <label><input type="checkbox" id="digiUltraEcoMode"> Digi Ultra Eco Mode</label>
+        <label><input type="checkbox" id="wxSensorActive"> Wx Sensor Active</label>
+      </div>
+      
+      <!-- LoRa Settings -->
+      <div class="form-section">
+        <h3>📶 Configuración LoRa</h3>
+        <label>Frequency (Hz): <input type="number" id="frequency" min="430000000" max="928000000"></label>
+        <label>Spreading Factor: <input type="number" id="spreadingfactor" min="7" max="12"></label>
+        <label>Coding Rate (4/X): <input type="number" id="codingrate4" min="5" max="8"></label>
+        <label>Signal Bandwidth (Hz): <input type="number" id="signalbandwidth" min="7800" max="500000"></label>
+        <label>Power (dBm): <input type="number" id="power" min="2" max="20"></label>
+      </div>
+      
+      <div class="button-group">
+        <button type="submit">✅ Enviar Configuración</button>
+        <button type="button" id="sendDeleteCommandButton" disabled>🗑️ Delete Config</button>
+      </div>
+    </form>
+  </div>
 
   <script>
     let port;
     let writer;
     
-    // --- Botón "Connect" ---
-    document.getElementById("connect").addEventListener("click", async () => {
-      try {
-        port = await navigator.serial.requestPort();
-        await port.open({ baudRate: 115200 });
-        writer = port.writable.getWriter();
-        document.getElementById("status").textContent = "✅ Connected to NRF52840";
-        document.getElementById("status").style.color = "green";
-      } catch (error) {
-        alert("Connection failed: " + error);
+    // Mostrar mensaje
+    function showMessage(text, type = 'info') {
+      const msgEl = document.getElementById('message');
+      msgEl.textContent = text;
+      msgEl.className = `message show ${type}`;
+      setTimeout(() => msgEl.classList.remove('show'), 5000);
+    }
+    
+    // Actualizar estado
+    function updateStatus(connected) {
+      const statusEl = document.getElementById('status');
+      const connectBtn = document.getElementById('connectBtn');
+      const form = document.getElementById('LoRaAPRSDigiForm');
+      const sendDeleteBtn = document.getElementById('sendDeleteCommandButton');
+      
+      if (connected) {
+        statusEl.textContent = '✅ Conectado a NRF52840';
+        statusEl.className = 'status-connected';
+        connectBtn.disabled = true;
+        connectBtn.textContent = '🔌 Desconectar';
+        form.classList.add('active');
+        sendDeleteBtn.disabled = false;
+      } else {
+        statusEl.textContent = '❌ No conectado';
+        statusEl.className = 'status-disconnected';
+        connectBtn.disabled = false;
+        connectBtn.textContent = '🔌 Conectar a NRF52840';
+        form.classList.remove('active');
+        sendDeleteBtn.disabled = true;
+      }
+    }
+    
+    // Conectar/desconectar serial
+    document.getElementById('connectBtn').addEventListener('click', async () => {
+      if (port) {
+        // Desconectar
+        try {
+          await port.close();
+          port = null;
+          writer = null;
+          updateStatus(false);
+          showMessage('Desconectado del NRF52840', 'info');
+        } catch (error) {
+          showMessage('Error al desconectar: ' + error.message, 'error');
+        }
+      } else {
+        // Conectar
+        try {
+          port = await navigator.serial.requestPort();
+          await port.open({ baudRate: 115200 });
+          writer = port.writable.getWriter();
+          updateStatus(true);
+          showMessage('✅ Conectado exitosamente', 'success');
+        } catch (error) {
+          showMessage('Error de conexión: ' + error.message, 'error');
+          port = null;
+          writer = null;
+        }
       }
     });
-
-    document.getElementById("LoRaAPRSDigiForm").addEventListener("submit", async (e) => {
+    
+    // Enviar JSON
+    async function sendJSON(dataObj) {
+      if (!writer) {
+        showMessage('Por favor, conecta el dispositivo primero', 'error');
+        return false;
+      }
+      
+      try {
+        const encoder = new TextEncoder();
+        const jsonData = JSON.stringify(dataObj);
+        await writer.write(encoder.encode(jsonData + "\n"));
+        showMessage('✅ Datos enviados: ' + jsonData, 'success');
+        return true;
+      } catch (error) {
+        showMessage('Error al enviar: ' + error.message, 'error');
+        return false;
+      }
+    }
+    
+    // Validar campos numéricos
+    function validateForm() {
+      const freq = parseFloat(document.getElementById('frequency').value);
+      const sf = parseInt(document.getElementById('spreadingfactor').value);
+      const cr = parseInt(document.getElementById('codingrate4').value);
+      const bw = parseFloat(document.getElementById('signalbandwidth').value);
+      const power = parseInt(document.getElementById('power').value);
+      
+      if (freq && (freq < 430000000 || freq > 928000000)) {
+        showMessage('Frecuencia fuera de rango (430-928 MHz)', 'error');
+        return false;
+      }
+      
+      if (sf && (sf < 7 || sf > 12)) {
+        showMessage('Spreading Factor debe ser 7-12', 'error');
+        return false;
+      }
+      
+      if (cr && (cr < 5 || cr > 8)) {
+        showMessage('Coding Rate debe ser 5-8', 'error');
+        return false;
+      }
+      
+      if (bw && (bw < 7800 || bw > 500000)) {
+        showMessage('Bandwidth fuera de rango (7800-500000 Hz)', 'error');
+        return false;
+      }
+      
+      if (power && (power < 2 || power > 20)) {
+        showMessage('Power debe ser 2-20 dBm', 'error');
+        return false;
+      }
+      
+      return true;
+    }
+    
+    // Submit form
+    document.getElementById('LoRaAPRSDigiForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      if (!validateForm()) return;
       
-      if (!port || !writer) {
-        alert("Please connect to the NRF52840 first.");
-        return;
-      }
-
-      // Get Data and generate JSON
       const data = {
-        callsign: document.getElementById("callsign").value,
-        digiMode: document.getElementById("digiMode").value,
-        symbol: document.getElementById("symbol").value,
-        overlay: document.getElementById("overlay").value,
-        comment: document.getElementById("comment").value,
-        latitude: parseFloat(document.getElementById("latitude").value),
-        longitude: parseFloat(document.getElementById("longitude").value),
-        sendBatteryTelemetry: document.getElementById("sendBatteryTelemetry").checked,
-        beaconInterval: parseInt(document.getElementById("beaconInterval").value),
-        digiUltraEcoMode: document.getElementById("digiUltraEcoMode").checked,
-        wxSensorActive: document.getElementById("wxSensorActive").checked,
-        frequency: parseFloat(document.getElementById("frequency").value),
-        spreadingfactor: parseInt(document.getElementById("spreadingfactor").value),
-        codingrate4: parseInt(document.getElementById("codingrate4").value),
-        signalbandwidth: parseFloat(document.getElementById("signalbandwidth").value),
-        power: parseInt(document.getElementById("power").value)        
+        callsign: document.getElementById('callsign').value,
+        digiMode: document.getElementById('digiMode').value,
+        symbol: document.getElementById('symbol').value,
+        overlay: document.getElementById('overlay').value,
+        comment: document.getElementById('comment').value,
+        latitude: parseFloat(document.getElementById('latitude').value) || null,
+        longitude: parseFloat(document.getElementById('longitude').value) || null,
+        sendBatteryTelemetry: document.getElementById('sendBatteryTelemetry').checked,
+        beaconInterval: parseInt(document.getElementById('beaconInterval').value) || 60,
+        digiUltraEcoMode: document.getElementById('digiUltraEcoMode').checked,
+        wxSensorActive: document.getElementById('wxSensorActive').checked,
+        frequency: parseFloat(document.getElementById('frequency').value),
+        spreadingfactor: parseInt(document.getElementById('spreadingfactor').value),
+        codingrate4: parseInt(document.getElementById('codingrate4').value),
+        signalbandwidth: parseFloat(document.getElementById('signalbandwidth').value),
+        power: parseInt(document.getElementById('power').value)        
       };
       
-      const jsonData = JSON.stringify(data);
-      
-      try {
-        const encoder = new TextEncoder();        
-        await writer.write(encoder.encode(jsonData + "\n"));
-        alert("New Configuration sent:\n" + jsonData);
-      } catch (error) {
-        alert("Error: " + error);
+      await sendJSON(data);
+    });
+    
+    // Delete command
+    document.getElementById('sendDeleteCommandButton').addEventListener('click', async () => {
+      if (confirm('¿Estás seguro de que deseas enviar el comando de eliminación?')) {
+        await sendJSON({ command: 0 });
       }
     });
+    
+    // Inicializar estado
+    updateStatus(false);
   </script>
 </body>
 </html>
