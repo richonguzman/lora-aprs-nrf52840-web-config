@@ -313,6 +313,10 @@
             <!-- LoRa Settings -->
             <div class="form-section">
                 <h3>LoRa</h3>
+                <label class="form-switch">
+                    <input type="checkbox" id="cadActive" checked>
+                    CAD Active
+                </label>
                 <div class="form-row">
                     <label>
                         <span>Frequency (Hz)</span>
@@ -510,6 +514,7 @@
                 codingRate4: parseInt(document.getElementById('codingRate4').value) || 5,
                 signalBandwidth: parseFloat(document.getElementById('signalBandwidth').value) || 125.0,
                 power: parseInt(document.getElementById('power').value) || 20,
+                cadActive: document.getElementById('cadActive').checked,
 
             };
 
