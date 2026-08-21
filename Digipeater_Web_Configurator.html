@@ -506,6 +506,10 @@
                         </select>
                     </label>
                 </div>
+                <label class="form-switch">
+                    <input type="checkbox" id="cadActive" checked>
+                    Enable CAD/DIFS (Channel Activity Detection)
+                </label>
             </div>
 
             <!-- Battery -->
@@ -695,6 +699,7 @@
 
                 digiMode: parseInt(document.getElementById("digiMode").value) || 0,
                 digiUltraEcoMode: document.getElementById('digiUltraEcoMode').checked,
+                cadActive: document.getElementById('cadActive').checked,
 
                 blacklist: document.getElementById('blacklist').value || "",
 
